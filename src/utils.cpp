@@ -2,9 +2,11 @@
 #include <vector>
 #include <sstream>
 
+#include "utils.hpp"
+
 namespace ota::utils
 {
-    std::string str_join(const std::vector<std::string> &v, const std::string &delim = "")
+    std::string str_join(const std::vector<std::string> &v, const std::string &delim)
     {
         std::ostringstream ss;
         for (size_t i = 0, len = v.size(); i < len; i++)
@@ -29,11 +31,10 @@ namespace ota::utils
         return v;
     }
 
-    std::string str_trim(const std::string &str, const std::string &white = " \n\t\r")
+    std::string str_trim(const std::string &str, const std::string &white)
     {
         const size_t start = str.find_first_not_of(white),
                      end = str.find_last_not_of(white);
         return start < end ? str.substr(start, end - start + 1) : "";
     }
-
 }
