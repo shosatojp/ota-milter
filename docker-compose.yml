@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  ota-milter:
+    build: .
+    image: ghcr.io/shosatojp/ota-milter:v1.0

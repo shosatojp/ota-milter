@@ -14,10 +14,3 @@ main.out: $(OBJ)
 
 clean:
 	rm -f main.out $(OBJ)
-
-DOCKER_TAG:=shosatojp/ota-milter:v1.0
-docker-build:
-	docker build -t $(DOCKER_TAG) .
-
-docker-push:
-	docker push $(DOCKER_TAG)
