@@ -12,11 +12,12 @@
 #include <thread>
 
 #include "ota.hpp"
+#include "utils.hpp"
 
 namespace ota
 {
-    OneTimeAddr::OneTimeAddr(const std::string &_domain, const std::chrono::seconds _expires_in)
-        : random_engine(seed_gen()), domain(_domain), expires_in(_expires_in)
+    OneTimeAddr::OneTimeAddr(const std::vector<email_addr> &_rcpts, const std::chrono::seconds _expires_in)
+        : random_engine(seed_gen()), rcpts(_rcpts), expires_in(_expires_in)
     {
         this->cleanup_thread = std::thread(
             [this]
@@ -52,12 +53,12 @@ namespace ota
         this->cleanup_thread.join();
     }
 
-    std::string OneTimeAddr::create(const std::string &realrcpt)
+    std::string OneTimeAddr::create(const email_addr &realrcpt)
     {
         std::string addr;
         while (true)
         {
-            addr = this->generate_tmpaddr();
+            addr = this->generate_tmpaddr(realrcpt);
             if (!this->tmpaddrs.contains(addr))
                 break;
         }
@@ -65,6 +66,23 @@ namespace ota
         const auto &&expires_at = std::chrono::system_clock::now() + std::chrono::duration_cast<std::chrono::seconds>(this->expires_in);
         this->tmpaddrs[addr] = {expires_at, realrcpt};
         return addr;
+    }
+
+    std::optional<email_addr> OneTimeAddr::match(const std::string &addr)
+    {
+        const auto parsed = ota::utils::parse_email_addr(addr);
+        if (!parsed.has_value())
+            return std::nullopt;
+
+        for (auto &&rcpt : this->rcpts)
+        {
+            if (parsed.value().domain == rcpt.domain && parsed.value().user == rcpt.user)
+            {
+                return parsed.value();
+            }
+        }
+
+        return std::nullopt;
     }
 
     std::optional<OneTimeAddrEntry> OneTimeAddr::verify(const std::string &addr)
@@ -91,18 +109,18 @@ namespace ota
         }
     }
 
-    std::string OneTimeAddr::generate_tmpaddr()
+    std::string OneTimeAddr::generate_tmpaddr(const email_addr &addr)
     {
         const std::string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
         std::ostringstream ss;
-        ss << "tmp+";
+        ss << addr.user << '+';
         for (size_t i = 0; i < 10; i++)
         {
             std::uniform_int_distribution<size_t> dist(0, chars.size() - 1);
             size_t result = dist(random_engine);
             ss << chars[result];
         }
-        ss << "@" << this->domain;
+        ss << "@" << addr.domain;
         return ss.str();
     }
 }

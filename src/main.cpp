@@ -19,21 +19,11 @@
 
 using ota::onetimeaddr;
 using ota::OneTimeAddr;
-using ota::rcpts;
 using ota::smfilter;
+using ota::utils::email_addr;
 
 int main(int argc, const char *argv[])
 {
-    /* setup domain */
-    const char *domain_ptr = getenv("OTA_MILTER_DOMAIN");
-    if (!domain_ptr)
-    {
-        std::cerr << "OTA_MILTER_DOMAIN is required" << std::endl;
-        exit(EX_CONFIG);
-    }
-    const std::string domain = domain_ptr;
-    std::cerr << "Info: domain: " << domain << std::endl;
-
     /* setup expires_in */
     std::chrono::seconds expires_in = std::chrono::seconds(600);
     const char *expires_in_ptr = getenv("OTA_MILTER_EXPIRES_IN");
@@ -43,9 +33,6 @@ int main(int argc, const char *argv[])
     }
     std::cerr << "Info: expires_in: " << expires_in.count() << " seconds" << std::endl;
 
-    /* setup onetimeaddr */
-    onetimeaddr = std::make_unique<OneTimeAddr>(domain, expires_in);
-
     /* setup rcpts */
     const char *rcpts_ptr = getenv("OTA_MILTER_RCPT");
     if (!rcpts_ptr)
@@ -53,12 +40,20 @@ int main(int argc, const char *argv[])
         std::cerr << "OTA_MILTER_RCPT is required" << std::endl;
         exit(EX_CONFIG);
     }
+    std::vector<email_addr> rcpts;
     for (auto &&_rcpt : ota::utils::str_split(rcpts_ptr, " "))
     {
         const std::string rcpt = ota::utils::str_trim(_rcpt);
-        rcpts.insert(rcpt);
-        std::cerr << "Info: target recipient: " << rcpt << std::endl;
+        const auto parsed = ota::utils::parse_email_addr(rcpt);
+        if (parsed.has_value())
+        {
+            rcpts.push_back(parsed.value());
+            std::cerr << "Info: target recipient: " << rcpt << std::endl;
+        }
     }
+
+    /* setup onetimeaddr */
+    onetimeaddr = std::make_unique<OneTimeAddr>(rcpts, expires_in);
 
     /* start milter server */
     const char *conn_ptr = getenv("OTA_MILTER_CONN");

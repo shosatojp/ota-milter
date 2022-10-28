@@ -16,6 +16,5 @@ namespace ota
     };
 
     extern std::optional<std::unique_ptr<OneTimeAddr>> onetimeaddr;
-    extern std::unordered_set<std::string> rcpts;
     extern struct smfiDesc smfilter;
 }

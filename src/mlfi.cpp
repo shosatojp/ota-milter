@@ -20,7 +20,6 @@
 namespace ota
 {
     std::optional<std::unique_ptr<OneTimeAddr>> onetimeaddr = std::nullopt;
-    std::unordered_set<std::string> rcpts;
 
     sfsistat mlfi_cleanup(SMFICTX *ctx, sfsistat stat)
     {
@@ -61,12 +60,18 @@ namespace ota
         }
         const std::string rcpt = rcptaddr;
 
-        if (rcpt.starts_with("tmp+"))
+        const auto match = onetimeaddr.value()->match(rcpt);
+        if (!match.has_value())
+        {
+            priv->rcpts.push_back(rcpt);
+            return SMFIS_CONTINUE;
+        }
+        else if (match.value().alias.has_value())
         {
             const auto &&entry = onetimeaddr.value()->verify(rcpt);
             if (entry.has_value())
             {
-                priv->rcpts.push_back(entry.value().realrcpt);
+                priv->rcpts.push_back(entry.value().realrcpt.str());
                 onetimeaddr.value()->del(rcpt);
                 std::cerr << "Info: one time address " << rcpt << " was used" << std::endl;
                 return SMFIS_CONTINUE;
@@ -78,9 +83,9 @@ namespace ota
                 return mlfi_cleanup(ctx, SMFIS_REJECT);
             }
         }
-        else if (rcpts.contains(rcpt))
+        else
         {
-            const std::string addr = onetimeaddr.value()->create(rcpt);
+            const std::string addr = onetimeaddr.value()->create(match.value());
             std::string addrrepr = addr;
             addrrepr = std::regex_replace(addrrepr, std::regex("@"), " [_at-mark_] ");
             addrrepr = std::regex_replace(addrrepr, std::regex("\\."), " [_dot_] ");
@@ -93,11 +98,6 @@ namespace ota
             smfi_setreply(ctx, "500", NULL, const_cast<char *>(ss_str.c_str()));
             return mlfi_cleanup(ctx, SMFIS_REJECT);
         }
-        else
-        {
-            priv->rcpts.push_back(rcpt);
-        }
-        return SMFIS_CONTINUE;
     }
 
     sfsistat mlfi_eom(SMFICTX *ctx)

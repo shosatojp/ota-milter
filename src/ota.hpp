@@ -13,36 +13,41 @@
 #include <regex>
 #include <thread>
 
+#include "utils.hpp"
+
 namespace ota
 {
+    using utils::email_addr;
+
     struct OneTimeAddrEntry
     {
         std::chrono::time_point<std::chrono::system_clock> expires_at;
-        std::string realrcpt;
+        email_addr realrcpt;
     };
 
     class OneTimeAddr
     {
     private:
+        std::thread cleanup_thread;
         std::unordered_map<std::string, OneTimeAddrEntry> tmpaddrs;
         std::random_device seed_gen;
         std::mt19937 random_engine;
+        std::vector<email_addr> rcpts;
 
     public:
-        std::string domain;
         std::chrono::seconds expires_in;
-        std::thread cleanup_thread;
         OneTimeAddr(const OneTimeAddr &ota) = delete;
         OneTimeAddr(const OneTimeAddr &&ota) = delete;
-        OneTimeAddr(const std::string &domain, const std::chrono::seconds expires_in);
+        OneTimeAddr(const std::vector<email_addr> &rcpts, const std::chrono::seconds expires_in);
         ~OneTimeAddr();
         OneTimeAddr operator=(const OneTimeAddr &ota) = delete;
         OneTimeAddr operator=(const OneTimeAddr &&ota) = delete;
-        std::string create(const std::string &realrcpt);
+        std::string create(const email_addr &realrcpt);
+        std::optional<email_addr> match(const std::string &addr);
         std::optional<OneTimeAddrEntry> verify(const std::string &addr);
         void del(const std::string &addr);
 
     private:
-        std::string generate_tmpaddr();
+        std::string generate_tmpaddr(const email_addr &addr);
     };
 }
