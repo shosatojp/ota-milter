@@ -9,6 +9,11 @@ A postfix/sendmail milter for one time address to prevent spams.
 3. Sender sends mail to the one time address again.
 4. To header is modified (from one time address) to real recipient (`me@example.com`), and the mail will be sent.
 
+## Requirements
+
+- Full access for a domain
+- Admin access for a SMTP server
+
 ## Build
 
 - Requirements
