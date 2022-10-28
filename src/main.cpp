@@ -45,7 +45,6 @@ int main(int argc, const char *argv[])
 
     /* setup onetimeaddr */
     onetimeaddr = std::make_unique<OneTimeAddr>(domain, expires_in);
-    std::cerr << "OTA_MILTER_RCPT" << std::endl;
 
     /* setup rcpts */
     const char *rcpts_ptr = getenv("OTA_MILTER_RCPT");
