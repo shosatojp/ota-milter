@@ -85,7 +85,7 @@ namespace ota
             addrrepr = std::regex_replace(addrrepr, std::regex("@"), " [_at-mark_] ");
             addrrepr = std::regex_replace(addrrepr, std::regex("\\."), " [_dot_] ");
 
-            std::cerr << "Info: new one time address " << addr << " is created" << std::endl;
+            std::cerr << "Info: new one time address " << addr << " was created" << std::endl;
             std::ostringstream ss;
             ss << "Reject: This email address is send only. Please send again to \""
                << addrrepr << "\" in " << onetimeaddr.value()->expires_in.count() << " seconds.";
