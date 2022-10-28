@@ -25,17 +25,19 @@ namespace ota
     {
     private:
         std::unordered_map<std::string, OneTimeAddrEntry> tmpaddrs;
+        std::random_device seed_gen;
+        std::mt19937 random_engine;
 
     public:
         std::string domain;
         std::chrono::seconds expires_in;
         std::thread cleanup_thread;
-        OneTimeAddr(const OneTimeAddr &ota);
-        OneTimeAddr(const OneTimeAddr &&ota);
+        OneTimeAddr(const OneTimeAddr &ota) = delete;
+        OneTimeAddr(const OneTimeAddr &&ota) = delete;
         OneTimeAddr(const std::string &domain, const std::chrono::seconds expires_in);
         ~OneTimeAddr();
-        OneTimeAddr operator=(const OneTimeAddr &ota);
-        OneTimeAddr operator=(const OneTimeAddr &&ota);
+        OneTimeAddr operator=(const OneTimeAddr &ota) = delete;
+        OneTimeAddr operator=(const OneTimeAddr &&ota) = delete;
         std::string create(const std::string &realrcpt);
         std::optional<OneTimeAddrEntry> verify(const std::string &addr);
         void del(const std::string &addr);

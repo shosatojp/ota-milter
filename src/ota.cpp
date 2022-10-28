@@ -15,39 +15,8 @@
 
 namespace ota
 {
-    std::random_device seed_gen;
-    std::mt19937 random_engine(seed_gen());
-
-    OneTimeAddr::OneTimeAddr(const OneTimeAddr &ota)
-    {
-        this->domain = ota.domain;
-        this->expires_in = ota.expires_in;
-        this->tmpaddrs = ota.tmpaddrs;
-    }
-    OneTimeAddr::OneTimeAddr(const OneTimeAddr &&ota)
-    {
-        this->domain = std::move(ota.domain);
-        this->expires_in = std::move(ota.expires_in);
-        this->tmpaddrs = std::move(ota.tmpaddrs);
-    }
-
-    OneTimeAddr OneTimeAddr::operator=(const OneTimeAddr &ota)
-    {
-        this->domain = ota.domain;
-        this->expires_in = ota.expires_in;
-        this->tmpaddrs = ota.tmpaddrs;
-        return *this;
-    }
-    OneTimeAddr OneTimeAddr::operator=(const OneTimeAddr &&ota)
-    {
-        this->domain = std::move(ota.domain);
-        this->expires_in = std::move(ota.expires_in);
-        this->tmpaddrs = std::move(ota.tmpaddrs);
-        return std::move(*this);
-    }
-
     OneTimeAddr::OneTimeAddr(const std::string &_domain, const std::chrono::seconds _expires_in)
-        : domain(_domain), expires_in(_expires_in)
+        : random_engine(seed_gen()), domain(_domain), expires_in(_expires_in)
     {
         this->cleanup_thread = std::thread(
             [this]

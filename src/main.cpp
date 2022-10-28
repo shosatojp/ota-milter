@@ -18,9 +18,9 @@
 #include "mlfi.hpp"
 
 using ota::onetimeaddr;
+using ota::OneTimeAddr;
 using ota::rcpts;
 using ota::smfilter;
-using ota::OneTimeAddr;
 
 int main(int argc, const char *argv[])
 {
@@ -44,7 +44,8 @@ int main(int argc, const char *argv[])
     std::cerr << "Info: expires_in: " << expires_in.count() << " seconds" << std::endl;
 
     /* setup onetimeaddr */
-    onetimeaddr = OneTimeAddr{domain, expires_in};
+    onetimeaddr = std::make_unique<OneTimeAddr>(domain, expires_in);
+    std::cerr << "OTA_MILTER_RCPT" << std::endl;
 
     /* setup rcpts */
     const char *rcpts_ptr = getenv("OTA_MILTER_RCPT");

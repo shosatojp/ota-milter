@@ -19,7 +19,7 @@
 
 namespace ota
 {
-    std::optional<OneTimeAddr> onetimeaddr;
+    std::optional<std::unique_ptr<OneTimeAddr>> onetimeaddr = std::nullopt;
     std::unordered_set<std::string> rcpts;
 
     sfsistat mlfi_cleanup(SMFICTX *ctx, sfsistat stat)
@@ -63,11 +63,11 @@ namespace ota
 
         if (rcpt.starts_with("tmp+"))
         {
-            const auto &&entry = onetimeaddr.value().verify(rcpt);
+            const auto &&entry = onetimeaddr.value()->verify(rcpt);
             if (entry.has_value())
             {
                 priv->rcpts.push_back(entry.value().realrcpt);
-                onetimeaddr.value().del(rcpt);
+                onetimeaddr.value()->del(rcpt);
                 std::cerr << "Info: one time address " << rcpt << " was used" << std::endl;
                 return SMFIS_CONTINUE;
             }
@@ -80,7 +80,7 @@ namespace ota
         }
         else if (rcpts.contains(rcpt))
         {
-            const std::string addr = onetimeaddr.value().create(rcpt);
+            const std::string addr = onetimeaddr.value()->create(rcpt);
             std::string addrrepr = addr;
             addrrepr = std::regex_replace(addrrepr, std::regex("@"), " [_at-mark_] ");
             addrrepr = std::regex_replace(addrrepr, std::regex("\\."), " [_dot_] ");
@@ -88,7 +88,7 @@ namespace ota
             std::cerr << "Info: new one time address " << addr << " is created" << std::endl;
             std::ostringstream ss;
             ss << "Reject: This email address is send only. Please send again to \""
-               << addrrepr << "\" in " << onetimeaddr.value().expires_in.count() << " seconds.";
+               << addrrepr << "\" in " << onetimeaddr.value()->expires_in.count() << " seconds.";
             const auto ss_str = ss.str();
             smfi_setreply(ctx, "500", NULL, const_cast<char *>(ss_str.c_str()));
             return mlfi_cleanup(ctx, SMFIS_REJECT);
