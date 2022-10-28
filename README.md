@@ -68,6 +68,7 @@ export OTA_MILTER_CONN=inet:6000
 postfix configuration
 
 ```conf
+# main.cf
 milter_default_action = accept
 smtpd_milters = inet:127.0.0.1:6000
 ```
