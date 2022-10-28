@@ -28,7 +28,7 @@ namespace ota
                     std::unordered_set<std::string> deletion_list;
                     for (auto &&[tmpaddr, entry] : this->tmpaddrs)
                     {
-                        if (entry.expires_at > now)
+                        if (entry.expires_at < now)
                         {
                             deletion_list.insert(std::string(tmpaddr));
                         }

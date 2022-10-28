@@ -34,7 +34,7 @@ docker run --rm -it \
     -e OTA_MILTER_DOMAIN=example.com \
     -e OTA_MILTER_RCPT="me@example.com" \
     -e OTA_MILTER_CONN=inet:6000 \
-    ghcr.io/shosatojp/ota-milter:v1.0
+    ghcr.io/shosatojp/ota-milter
 ```
 
 ```yml
@@ -43,7 +43,7 @@ version: '3'
 
 services:
   ota-milter:
-    image: ghcr.io/shosatojp/ota-milter:v1.0
+    image: ghcr.io/shosatojp/ota-milter
     restart: always
     environment:
       OTA_MILTER_DOMAIN: example.com
